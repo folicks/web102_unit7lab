@@ -1,36 +1,78 @@
 import { useState } from 'react'
+import { supabase } from '../client'
 import './CreatePost.css'
 
 const CreatePost = () => {
-
-    const [post, setPost] = useState({title: "", author: "", description: ""})
+    const [crewmate, setCrewmate] = useState({
+        name: "", 
+        speed: 1, 
+        color: "red", 
+        specialty: ""
+    })
 
     const handleChange = (event) => {
         const {name, value} = event.target
-        setPost( (prev) => {
+        setCrewmate((prev) => {
             return {
                 ...prev,
-                [name]:value,
+                [name]: value,
             }
         })
     }
 
+    const createCrewmate = async (event) => {
+        event.preventDefault()
+
+        await supabase
+            .from('Crewmates')
+            .insert({
+                name: crewmate.name, 
+                speed: crewmate.speed, 
+                color: crewmate.color, 
+                specialty: crewmate.specialty
+            })
+            .select()
+
+        window.location = "/"
+    }
+
     return (
-        <div>
+        <div className="create-form">
             <form>
-                <label htmlFor="title">Title</label> <br />
-                <input type="text" id="title" name="title" onChange={handleChange} /><br />
+                <label htmlFor="name">Name</label> <br />
+                <input type="text" id="name" name="name" onChange={handleChange} /><br />
                 <br/>
 
-                <label htmlFor="author">Author</label><br />
-                <input type="text" id="author" name="author" onChange={handleChange} /><br />
+                <label htmlFor="color">Color</label><br />
+                <select id="color" name="color" onChange={handleChange}>
+                    <option value="red">Red</option>
+                    <option value="blue">Blue</option>
+                    <option value="green">Green</option>
+                    <option value="yellow">Yellow</option>
+                    <option value="purple">Purple</option>
+                </select>
+                <br/>
                 <br/>
 
-                <label htmlFor="description">Description</label><br />
-                <textarea rows="5" cols="50" id="description" name="description" onChange={handleChange}>
-                </textarea>
+                <label htmlFor="specialty">Specialty</label><br />
+                <input type="text" id="specialty" name="specialty" onChange={handleChange} />
                 <br/>
-                <input type="submit" value="Submit" />
+                <br/>
+
+                <label htmlFor="speed">Initial Speed (1-10)</label><br />
+                <input 
+                    type="number" 
+                    id="speed" 
+                    name="speed" 
+                    min="1" 
+                    max="10" 
+                    onChange={handleChange} 
+                    value={crewmate.speed}
+                />
+                <br/>
+                <br/>
+                
+                <input type="submit" value="Create Crewmate" onClick={createCrewmate} />
             </form>
         </div>
     )

@@ -1,39 +1,110 @@
-import {useState} from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { supabase } from '../client'
 import './EditPost.css'
 
-const EditPost = ({data}) => {
+const EditPost = () => {
+    const { id } = useParams()
+    const [crewmate, setCrewmate] = useState({
+        name: "", 
+        speed: 1, 
+        color: "", 
+        specialty: ""
+    })
 
-    const {id} = useParams()
-    const [post, setPost] = useState({id: null, title: "", author: "", description: ""})
+    useEffect(() => {
+        const fetchCrewmate = async () => {
+            const { data, error } = await supabase
+                .from('Crewmates')
+                .select()
+                .eq('id', id)
+                .single()
+
+            if (error) {
+                console.error('Error fetching crewmate:', error)
+            } else if (data) {
+                setCrewmate(data)
+            }
+        }
+
+        fetchCrewmate()
+    }, [id])
 
     const handleChange = (event) => {
         const {name, value} = event.target
-        setPost( (prev) => {
+        setCrewmate((prev) => {
             return {
                 ...prev,
-                [name]:value,
+                [name]: value,
             }
         })
     }
 
+    const updateCrewmate = async (event) => {
+        event.preventDefault()
+
+        await supabase
+            .from('Crewmates')
+            .update({ 
+                name: crewmate.name,
+                speed: crewmate.speed,
+                color: crewmate.color,
+                specialty: crewmate.specialty
+            })
+            .eq('id', id)
+
+        window.location = "/"
+    }
+
+    const deleteCrewmate = async (event) => {
+        event.preventDefault()
+
+        await supabase
+            .from('Crewmates')
+            .delete()
+            .eq('id', id)
+
+        window.location = "/"
+    }
+
     return (
-        <div>
+        <div className="edit-form">
             <form>
-                <label htmlFor="title">Title</label> <br />
-                <input type="text" id="title" name="title" value={post.title} onChange={handleChange} /><br />
+                <label htmlFor="name">Name</label> <br />
+                <input type="text" id="name" name="name" value={crewmate.name} onChange={handleChange} /><br />
                 <br/>
 
-                <label htmlFor="author">Author</label><br />
-                <input type="text" id="author" name="author" value={post.author} onChange={handleChange} /><br />
+                <label htmlFor="color">Color</label><br />
+                <select id="color" name="color" value={crewmate.color} onChange={handleChange}>
+                    <option value="red">Red</option>
+                    <option value="blue">Blue</option>
+                    <option value="green">Green</option>
+                    <option value="yellow">Yellow</option>
+                    <option value="purple">Purple</option>
+                </select>
+                <br/>
                 <br/>
 
-                <label htmlFor="description">Description</label><br />
-                <textarea rows="5" cols="50" id="description" name="description" value={post.description} onChange={handleChange} >
-                </textarea>
+                <label htmlFor="specialty">Specialty</label><br />
+                <input type="text" id="specialty" name="specialty" value={crewmate.specialty} onChange={handleChange} />
                 <br/>
-                <input type="submit" value="Submit" />
-                <button className="deleteButton">Delete</button>
+                <br/>
+
+                <label htmlFor="speed">Speed (1-10)</label><br />
+                <input 
+                    type="number" 
+                    id="speed" 
+                    name="speed" 
+                    min="1" 
+                    max="10" 
+                    value={crewmate.speed} 
+                    onChange={handleChange} 
+                />
+                <br/>
+                <br/>
+
+                <input type="submit" value="Update Crewmate" onClick={updateCrewmate} />
+                <button className="deleteButton" onClick={deleteCrewmate}>Delete Crewmate</button>
             </form>
         </div>
     )

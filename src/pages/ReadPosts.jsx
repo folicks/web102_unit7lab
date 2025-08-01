@@ -1,29 +1,41 @@
 import { useState, useEffect } from 'react'
 import Card from '../components/Card'
+import { supabase } from '../client'
 
-const ReadPosts = (props) => {
-
-    const [posts, setPosts] = useState([])
+const ReadPosts = () => {
+    const [crewmates, setCrewmates] = useState([])
 
     useEffect(() => {
-        setPosts(props.data)
-    }, [props])
+        const fetchCrewmates = async () => {
+            const { data, error } = await supabase
+                .from('Crewmates')
+                .select()
+                .order('created_at', { ascending: false })
+
+            if (error) {
+                console.error('Error fetching crewmates:', error)
+            } else {
+                setCrewmates(data)
+            }
+        }
+
+        fetchCrewmates()
+    }, [])
     
     return (
         <div className="ReadPosts">
             {
-                posts && posts.length > 0 ?
-                [...posts]
-                .sort((a, b) => a.id - b.id)
-                .map((post,index) => 
+                crewmates && crewmates.length > 0 ?
+                crewmates.map((crewmate) => 
                     <Card 
-                        key={post.id}
-                        id={post.id} 
-                        title={post.title}
-                        author={post.author}
-                        description={post.description}
+                        key={crewmate.id}
+                        id={crewmate.id} 
+                        name={crewmate.name}
+                        color={crewmate.color}
+                        speed={crewmate.speed}
+                        specialty={crewmate.specialty}
                     />
-                ) : <h2>{'No Challenges Yet 😞'}</h2>
+                ) : <h2>{'No Crewmates Yet �'}</h2>
             }
         </div>  
     )
